@@ -24,20 +24,22 @@ def print_item(item: WBItem) -> None:
 async def main() -> None:
     settings = load_settings()
     client = WBClient(settings.wb_api_token)
+    try:
+        print("=== Последние 5 отзывов ===")
+        feedbacks = await client.get_new_feedbacks(take=5)
+        if not feedbacks:
+            print("(неотвеченных отзывов нет)")
+        for item in feedbacks[:5]:
+            print_item(item)
 
-    print("=== Последние 5 отзывов ===")
-    feedbacks = await client.get_new_feedbacks(take=5)
-    if not feedbacks:
-        print("(неотвеченных отзывов нет)")
-    for item in feedbacks[:5]:
-        print_item(item)
-
-    print("\n=== Последние 5 вопросов ===")
-    questions = await client.get_new_questions(take=5)
-    if not questions:
-        print("(неотвеченных вопросов нет)")
-    for item in questions[:5]:
-        print_item(item)
+        print("\n=== Последние 5 вопросов ===")
+        questions = await client.get_new_questions(take=5)
+        if not questions:
+            print("(неотвеченных вопросов нет)")
+        for item in questions[:5]:
+            print_item(item)
+    finally:
+        await client.aclose()
 
 
 if __name__ == "__main__":

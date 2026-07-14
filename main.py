@@ -30,9 +30,15 @@ async def main() -> None:
     )
 
     try:
+        # Если на токене бота когда-либо был настроен вебхук (даже случайно),
+        # start_polling ниже упадёт с TelegramConflictError ещё до первого
+        # опроса WB — и уведомления не будут отправляться вообще.
+        await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(bot)
     finally:
         poll_task.cancel()
+        await wb_client.aclose()
+        await bot.session.close()
 
 
 if __name__ == "__main__":
