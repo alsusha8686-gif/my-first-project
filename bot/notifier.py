@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from dataclasses import asdict
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramRetryAfter
@@ -73,7 +74,7 @@ async def _check_once(
         # показанным, хотя пользователь его так и не увидел, и бот его больше
         # никогда не пришлёт.
         if await _notify(bot, chat_id, item):
-            storage.mark_seen(item.kind, item.id)
+            storage.mark_seen(item.kind, item.id, asdict(item))
 
         await asyncio.sleep(SEND_DELAY_SECONDS)
 

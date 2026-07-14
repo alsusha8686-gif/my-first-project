@@ -8,9 +8,7 @@ import httpx
 logger = logging.getLogger(__name__)
 
 FEEDBACKS_URL = "https://feedbacks-api.wildberries.ru/api/v1/feedbacks"
-FEEDBACK_URL = "https://feedbacks-api.wildberries.ru/api/v1/feedback"
 QUESTIONS_URL = "https://feedbacks-api.wildberries.ru/api/v1/questions"
-QUESTION_URL = "https://feedbacks-api.wildberries.ru/api/v1/question"
 
 REVIEW = "review"
 QUESTION = "question"
@@ -90,18 +88,6 @@ class WBClient:
             return []
         questions = (payload.get("data") or {}).get("questions") or []
         return [self._question_to_item(q) for q in questions]
-
-    async def get_item_by_id(self, kind: str, item_id: str) -> Optional[WBItem]:
-        url = FEEDBACK_URL if kind == REVIEW else QUESTION_URL
-        payload = await self._get(url, {"id": item_id})
-        if not payload:
-            return None
-
-        raw = payload.get("data")
-        if not raw:
-            return None
-
-        return self._feedback_to_item(raw) if kind == REVIEW else self._question_to_item(raw)
 
     @staticmethod
     def _feedback_to_item(fb: dict) -> WBItem:

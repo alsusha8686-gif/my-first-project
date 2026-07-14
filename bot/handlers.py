@@ -2,11 +2,12 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery
 
 from bot.keyboards import generate_keyboard
-from bot.wb_client import WBClient
+from bot.storage import SeenItemsStorage
+from bot.wb_client import WBItem
 from bot.yandex_gpt import YandexGPTClient
 
 
-def build_router(wb_client: WBClient, gpt_client: YandexGPTClient) -> Router:
+def build_router(gpt_client: YandexGPTClient, storage: SeenItemsStorage) -> Router:
     router = Router()
 
     @router.callback_query(F.data.startswith("gen:"))
@@ -14,17 +15,14 @@ def build_router(wb_client: WBClient, gpt_client: YandexGPTClient) -> Router:
         _, kind, item_id = callback.data.split(":", 2)
         await callback.answer("Генерирую черновик…")
 
-        try:
-            item = await wb_client.get_item_by_id(kind, item_id)
-        except Exception as exc:  # noqa: BLE001
-            await callback.message.reply(f"Не удалось получить данные из WB: {exc}")
-            return
-
-        if item is None:
+        data = storage.get_item_data(kind, item_id)
+        if data is None:
             await callback.message.reply(
-                "Не удалось найти это обращение в WB (возможно, на него уже ответили)."
+                "Не нашёл сохранённые данные этого обращения "
+                "(бот был перезапущен до того, как о нём пришло уведомление?)."
             )
             return
+        item = WBItem(**data)
 
         try:
             draft = await gpt_client.generate_reply(item)

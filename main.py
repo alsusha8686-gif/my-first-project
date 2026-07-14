@@ -23,7 +23,7 @@ async def main() -> None:
     gpt_client = YandexGPTClient(settings.yandex_api_key, settings.yandex_folder_id, settings.yandex_gpt_model)
     storage = SeenItemsStorage(settings.db_path)
 
-    dp.include_router(build_router(wb_client, gpt_client))
+    dp.include_router(build_router(gpt_client, storage))
 
     poll_task = asyncio.create_task(
         poll_loop(bot, settings.telegram_chat_id, wb_client, storage, settings.poll_interval_seconds)
